@@ -90,3 +90,4 @@ if __name__ == '__main__':
 
     qubo_mat = qubo_model.get_matrix()
     pd.DataFrame(qubo_mat).to_csv("tsp.csv", index=False, header=False)
+
