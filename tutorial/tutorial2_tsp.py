@@ -17,6 +17,7 @@ def solve_tsp():
     n = w.shape[0]
 
     # Create qubo variable matrix
+    # 按照多维数组的形式, 生成二进制变量或自旋变量
     x = kw.qubo.ndarray((n, n), "x", kw.qubo.Binary)
 
     # Get sets of edge and non-edge pairs
@@ -31,14 +32,14 @@ def solve_tsp():
     qubo_model.set_objective(kw.qubo.quicksum([w[u, v] * is_edge_used(x, u, v) for u, v in edges]))
 
     # Node constraint: Each node must belong to exactly one position
-    qubo_model.add_constraint(x.sum(axis=0) == 1, "sequence_cons", penalty=5)
+    qubo_model.add_constraint(x.sum(axis=0) == 1, "sequence_cons", penalty=5.0)
 
     # Position constraint: Each position can have only one node
-    qubo_model.add_constraint(x.sum(axis=1) == 1, "node_cons", penalty=5)
+    qubo_model.add_constraint(x.sum(axis=1) == 1, "node_cons", penalty=5.0)
 
     # Edge constraint: Pairs without edges cannot appear in the path
     qubo_model.add_constraint(kw.qubo.quicksum([is_edge_used(x, u, v) for u, v in no_edges]),
-                              "connect_cons", penalty=5)
+                              "connect_cons", penalty=5.0)
 
     # Perform calculation using SA optimizer
     optimizer = kw.classical.SimulatedAnnealingOptimizer(initial_temperature=100,
@@ -56,8 +57,22 @@ def solve_tsp():
     print("value of constraint term", res_dict)
 
     # Calculate the path length using path_cost
-    path_val = kw.qubo.get_val(qubo_model.objective, sol_dict)
+    # https://kaiwu-sdk-docs.qboson.com/zh/v1.2.0/source/modules/kaiwu.qubo.html
+    # 根据结果字典将变量值带入qubo变量.
+    path_val = qubo_model.get_value(sol_dict)
     print('path_cost: {}'.format(path_val))
+
+    if unsatisfied_count == 0:
+        print('valid path')
+
+        # Get the numerical value matrix of x
+        x_val = kw.qubo.get_array_val(x, sol_dict)
+        # Find the indices of non-zero items
+        nonzero_index = np.array(np.nonzero(x_val.T))[1]
+        # Print the path order
+        print(nonzero_index)
+    else:
+        print('invalid path')
 
 
 if __name__ == "__main__":
