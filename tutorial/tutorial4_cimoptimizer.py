@@ -31,19 +31,19 @@ def solve_tsp():
     qubo_model.set_objective(kw.qubo.quicksum([w[u, v] * is_edge_used(x, u, v) for u, v in edges]))
 
     # Node constraint: Each node must belong to exactly one position
-    qubo_model.add_constraint(x.sum(axis=0) == 1, "sequence_cons", penalty=5)
+    qubo_model.add_constraint(x.sum(axis=0) == 1, "sequence_cons", penalty=5.0)
 
     # Position constraint: Each position can have only one node
-    qubo_model.add_constraint(x.sum(axis=1) == 1, "node_cons", penalty=5)
+    qubo_model.add_constraint(x.sum(axis=1) == 1, "node_cons", penalty=5.0)
 
     # Edge constraint: Pairs without edges cannot appear in the path
     qubo_model.add_constraint(kw.qubo.quicksum([is_edge_used(x, u, v) for u, v in no_edges]),
-                              "connect_cons", penalty=5)
+                              "connect_cons", penalty=5.0)
 
     # Perform calculation using SA optimizer
-    kw.utils.set_log_level("INFO")
-    kw.utils.CheckpointManager.save_dir = '/tmp'
-    optimizer = kw.cim.CIMOptimizer(user_id="79048663116022001", sdk_code="z0rr6SgvotjDaAk2bCjlKSMVU7qeCv",
+    kw.common.set_log_level("DEBUG")
+    kw.common.CheckpointManager.save_dir = '/tmp/kaiwu/log/'
+    optimizer = kw.cim.CIMOptimizer(user_id="112493263272833026", sdk_code="mup6xgIhaqbXDUT3xaCpcGGnB3rCbc",
                                     task_name="tsp6")
 
     solver = kw.solver.SimpleSolver(optimizer)
@@ -57,7 +57,7 @@ def solve_tsp():
     print("value of constraint term", res_dict)
 
     # Calculate the path length using path_cost
-    path_val = kw.qubo.get_val(qubo_model.objective, sol_dict)
+    path_val = kw.core.get_val(qubo_model.objective, sol_dict)
     print('path_cost: {}'.format(path_val))
 
 
